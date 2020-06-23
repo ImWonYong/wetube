@@ -2,4 +2,7 @@ extends layouts/main
 
 
 block content
-  p=potato
+  .videos
+    each video in videos
+      h1= video.title
+      
