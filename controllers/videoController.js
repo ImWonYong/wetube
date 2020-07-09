@@ -62,7 +62,6 @@ export const getEditVideo = async (req, res) => {
   try {
     const video = await Video.findById(id);
     res.render("editVideo", { pageTitle: `Edit ${video.title}`, video });
-    res.redirect(routes.videoDetail(id));
   } catch (error) {
     res.redirect(routes.home);
   }
