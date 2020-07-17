@@ -15,11 +15,11 @@ block content
       if video.views === 1
         span.video__views 
           span#jsViewNumber 1
-          | view
+          |  view
       else
         span.viedo__views
           span#jsViewNumber=video.views
-          | views
+          |  views
       .viedo__author
         |Uploaded by 
         a(href=routes.userDetail(video.creator.id))=video.creator.name
@@ -27,11 +27,11 @@ block content
       if video.comments.length === 1
         span.video__comment-number
           span#jsCommentNumber 1
-          | comment
+          |  comment
       else
         span.video__comment-number
           span#jsCommentNumber=video.comments.length
-          | comments
+          |  comments
       form.add__comment#jsAddComment
         input(type="text", placeholder="Add a comment", name="comment")
       ul.video__comments-list#jsCommentList
