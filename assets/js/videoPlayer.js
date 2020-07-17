@@ -1,6 +1,3 @@
-import getBlobDuration from "get-blob-duration";
-import getBlobDuration from "get-blob-duration";
-
 const videoContainer = document.getElementById("jsVideoPlayer");
 const videoPlayer = document.querySelector("#jsVideoPlayer video");
 const playBtn = document.getElementById("jsPlayButton");
@@ -9,6 +6,21 @@ const fullScrnBtn = document.getElementById("jsFullScreen");
 const currentTime = document.getElementById("currentTime");
 const totalTime = document.getElementById("totalTime");
 const volumeRange = document.getElementById("jsVolume");
+const viewNumber = document.getElementById("jsViewNumber");
+
+const plusView = () => {
+  viewNumber.innerHTML = parseInt(viewNumber.innerHTML, 10) + 1;
+};
+
+const registerView = async () => {
+  const videoId = window.location.href.split("/videos/")[1];
+  const response = await fetch(`/api/${videoId}/view`, {
+    method: "POST",
+  });
+  if (response.status === 200) {
+    plusView();
+  }
+};
 
 function handelPlayClick() {
   if (videoPlayer.paused) {
@@ -90,6 +102,7 @@ function setTotalTime() {
 }
 
 function handleEnded() {
+  registerView();
   videoPlayer.currentTime = 0;
   playBtn.innerHTML = '<i class="fas fa-play"></i>';
 }
