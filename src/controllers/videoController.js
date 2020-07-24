@@ -1,11 +1,11 @@
 import routes from "../routes";
 import Video from "../models/Video";
 import Comment from "../models/Comment";
+import { s3 } from "../middlewares";
 
 export const home = async (req, res) => {
   try {
     const videos = await Video.find({}).sort({ _id: -1 });
-    console.log(req.user);
     res.render("home", { pageTitle: "Home", videos });
   } catch (error) {
     console.log(error);
@@ -34,10 +34,10 @@ export const getUpload = (req, res) =>
 export const postUpload = async (req, res) => {
   const {
     body: { title, description },
-    file: { path },
+    file: { location },
   } = req;
   const newVideo = await Video.create({
-    fileUrl: path,
+    fileUrl: location,
     title,
     description,
     creator: req.user.id,
@@ -68,7 +68,7 @@ export const getEditVideo = async (req, res) => {
   } = req;
   try {
     const video = await Video.findById(id);
-    if (video.creator !== req.user.id) {
+    if (String(video.creator) !== req.user.id) {
       throw Error();
     } else {
       res.render("editVideo", { pageTitle: `Edit ${video.title}`, video });
@@ -76,7 +76,6 @@ export const getEditVideo = async (req, res) => {
   } catch (error) {
     res.redirect(routes.home);
   }
-  res.render("editVideo", { pageTitle: "Edit Video" });
 };
 
 export const postEditVideo = async (req, res) => {
@@ -92,21 +91,51 @@ export const postEditVideo = async (req, res) => {
   }
 };
 
+// export const deleteVideo = async (req, res) => {
+//   const {
+//     params: { id },
+//   } = req;
+//   try {
+//     const video = await Video.findById(id);
+//     if (video.creator !== req.user.id) {
+//       throw Error();
+//     } else {
+//       await Video.findOneAndDelete({ _id: id });
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+//   res.redirect(routes.home);
+// };
+
+// 비디오 삭제 시 aws에 올라간 비디오도 삭제하기
 export const deleteVideo = async (req, res) => {
   const {
     params: { id },
   } = req;
   try {
-    const video = await Video.findById(id);
-    if (video.creator !== req.user.id) {
-      throw Error();
-    } else {
-      await Video.findOneAndDelete({ _id: id });
-    }
-  } catch (error) {
-    console.log(error);
+    const currentPost = await Video.findById(id);
+    const regex = /(http[s]?:\/\/)?([^\/\s]+\/)(.*)/;
+    const filePath = await currentPost.fileUrl.match(regex)[3];
+
+    const delFile = {
+      Bucket: "wywetube/video",
+      Key: filePath,
+    };
+
+    await s3
+      .deleteObject(delFile, function (err, data) {
+        if (err) console.log(err);
+        else console.log("The file has been removed");
+      })
+      .promise();
+
+    await Video.findOneAndDelete({ _id: id });
+    res.redirect(routes.home);
+  } catch {
+    res.status(400);
+    res.redirect(routes.home);
   }
-  res.redirect(routes.home);
 };
 
 // Register Video view

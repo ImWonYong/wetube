@@ -7,10 +7,10 @@ block content
   .search__videos
     if videos.length === 0
       h5 No Videos Found
-    each video in videos
+    each item in videos
       +videoBlock({
-        title:video.title,
-        views:video.views,
-        videoFile:video.fileUrl,
-        id:video.id
+        title:item.title,
+        views:item.views,
+        videoFile:item.fileUrl,
+        id:item.id
       })
