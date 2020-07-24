@@ -98,6 +98,7 @@ function getCurrentTime() {
 }
 
 async function setTotalTime() {
+  console.log(videoPlayer.duration);
   if (!videoPlayer.duration) {
     const blob = await fetch(videoPlayer.src).then((response) =>
       response.blob()
