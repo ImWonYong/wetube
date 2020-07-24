@@ -97,7 +97,7 @@ export const postEditVideo = async (req, res) => {
 //   } = req;
 //   try {
 //     const video = await Video.findById(id);
-//     if (video.creator !== req.user.id) {
+//     if (String(video.creator) !== req.user.id) {
 //       throw Error();
 //     } else {
 //       await Video.findOneAndDelete({ _id: id });
@@ -115,25 +115,29 @@ export const deleteVideo = async (req, res) => {
   } = req;
   try {
     const currentPost = await Video.findById(id);
-    const regex = /(http[s]?:\/\/)?([^\/\s]+\/)(.*)/;
-    const filePath = await currentPost.fileUrl.match(regex)[3];
+    if (String(currentPost.creator) !== req.user.id) {
+      throw Error();
+    } else {
+      const regex = /(http[s]?:\/\/)?([^\/\s]+\/)(.*)/;
+      const filePath = await currentPost.fileUrl.match(regex)[3];
 
-    const delFile = {
-      Bucket: "wywetube/video",
-      Key: filePath,
-    };
+      const delFile = {
+        Bucket: "wywetube/video",
+        Key: filePath,
+      };
 
-    await s3
-      .deleteObject(delFile, function (err, data) {
-        if (err) console.log(err);
-        else console.log("The file has been removed");
-      })
-      .promise();
+      await s3
+        .deleteObject(delFile, function (err, data) {
+          if (err) console.log(err);
+          else console.log("The file has been removed");
+        })
+        .promise();
 
-    await Video.findOneAndDelete({ _id: id });
-    res.redirect(routes.home);
+      await Video.findOneAndDelete({ _id: id });
+    }
   } catch {
     res.status(400);
+  } finally {
     res.redirect(routes.home);
   }
 };
